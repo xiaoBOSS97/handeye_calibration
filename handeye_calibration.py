@@ -42,6 +42,7 @@ class HandEyeCalibration:
         objp[:,:2] = np.mgrid[0:self.chessboardSize[0],0:self.chessboardSize[1]].T.reshape(-1,2)
         objp = objp * self.size_of_chessboard_squares_m
 
+        # calculate corners
         for image in self.images:
             img = cv.imread(image)
             gray = cv.cvtColor(img,cv.COLOR_BGR2GRAY)
@@ -49,10 +50,10 @@ class HandEyeCalibration:
             if ret == True:
                 corners2 = cv.cornerSubPix(gray,corners,(11,11),(-1,-1), self.criteria)
                 # Find the rotation and translation vectors. 
-                # rvecs [rx, ry, rz] in rad, tvecs [x, y, z] in m(defined by size_of_chessboard_squares_m)
+                # rvecs=[rx, ry, rz] in rad, tvecs=[x, y, z] in m(defined by size_of_chessboard_squares_m)
                 ret, rvecs, tvecs = cv.solvePnP(objp, corners2, self.cameraMatrix, self.dist)
                 # target2cam
-                self.R_tar2cam.append(cv.Rodrigues(rvecs)[0])
+                self.R_tar2cam.append(cv.Rodrigues(rvecs)[0]) # rotation vector to rotation matrix
                 self.t_tar2cam.append(tvecs)
             else:
                 print('no chessboard corners found:'+image)
@@ -62,11 +63,11 @@ class HandEyeCalibration:
         # convert 6D pose to 4x4 matrix 
         # pose [x,y,z,rx,ry,rz] in m and rad
         for pose in self.gripper2base:
-            r = cv.Rodrigues(pose[3:])[0]
+            r = cv.Rodrigues(pose[3:])[0] # rotation vector to rotation matrix
             t = pose[:3]
 
             if self.eye_to_hand:
-                # base2gripper https://docs.opencv.org/4.5.4/d9/d0c/group__calib3d.html#gaebfc1c9f7434196a374c382abf43439b
+                # inverse to base2gripper https://docs.opencv.org/4.5.4/d9/d0c/group__calib3d.html#gaebfc1c9f7434196a374c382abf43439b
                 r = r.T
                 t = -r.dot(t)
 
