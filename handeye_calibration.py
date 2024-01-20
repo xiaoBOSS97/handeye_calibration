@@ -8,8 +8,10 @@ class HandEyeCalibration:
         self.save_dir = save_dir
         # images
         self.img_dir = img_dir
-        self.images = sorted(glob.glob(self.img_dir+'/*.png'), key=lambda x: int(os.path.split(x)[-1].split('.')[0][3:])) # images must be sorted to align with pose order
+        # images must be sorted to align with pose order
+        self.images = sorted(glob.glob(self.img_dir+'/*.png'), key=lambda x: int(os.path.split(x)[-1].split('.')[0][3:]))
         # print(os.path.split(glob.glob(self.img_dir+'/*.png')[0])[-1].split('.')[0][3:])
+
         # chessboardSize and camera parameters
         self.chessboardSize = chessboardSize
         self.frameSize = frameSize
